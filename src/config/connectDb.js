@@ -2,12 +2,31 @@ import mongoose from "mongoose";
 
 const connectToDB = async () => {
   try {
-    const connect = await mongoose.connect(process.env.MONGO_URI);
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is not defined");
+    }
 
-    console.log(`database connected ${connect.connection.port}`);
+    const connection = await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      retryWrites: true,
+      maxPoolSize: 10,
+      minPoolSize: 2,
+    });
+
+    console.log(
+      `Database connected: ${connection.connection.host}:${connection.connection.port}`
+    );
+
+    mongoose.connection.on("error", (error) => {
+      console.error("MongoDB connection error:", error);
+      process.exit(1);
+    });
+
+    return connection;
   } catch (error) {
-    console.error(error);
-    console.log("something went wrong");
+    console.error("Database connection failed:", error);
+    process.exit(1);
   }
 };
 
