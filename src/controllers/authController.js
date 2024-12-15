@@ -108,3 +108,81 @@ export const signup = async (req, res) => {
     });
   }
 };
+
+// ** Login API **
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        status: "error",
+        message: "Email and password are required",
+      });
+    }
+
+    // Find user by email and include the password field
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(401).json({
+        status: "error",
+        message: "Incorrect email or password",
+      });
+    }
+
+    // Compare provided password with hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        status: "error",
+        message: "Incorrect email or password",
+      });
+    }
+
+    // Update last login date
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const payload = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    };
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+
+    // Set the JWT in an HttpOnly cookie
+    res.cookie("token", token, COOKIE_OPTIONS);
+
+    // Respond with user data (no token in body)
+    const userResponse = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    };
+
+    res.status(200).json({
+      status: "success",
+      data: userResponse,
+    });
+
+    logger.info(`User logged in: ${user.username}`);
+  } catch (error) {
+    logger.error("Login error:", error);
+
+    // Specific error handling for validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        status: "error",
+        message: "Validation failed",
+        errors: Object.values(error.errors).map((err) => err.message),
+      });
+    }
+
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
