@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectToDB from "./config/connectDb.js";
 import rateLimit from "express-rate-limit";
+import userRouter from "./router/auth.route.js";
 
 const app = express();
 dotenv.config();
@@ -73,6 +74,8 @@ const startServer = async () => {
 };
 
 startServer();
+
+app.use("/api/v1", userRouter);
 
 // Health check endpoint
 app.get("/", (req, res) => {

@@ -1,0 +1,6 @@
+2024-12-15 21:10:24 [31merror[39m: Error: secretOrPrivateKey must have a value
+    at module.exports [as sign] (C:\Users\Rohit singh\tinder-be\node_modules\jsonwebtoken\sign.js:111:20)
+    at signup (file:///C:/Users/Rohit%20singh/tinder-be/src/controllers/authController.js:54:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2024-12-15 21:13:34 [32minfo[39m: User signed up: bhanu9
+2024-12-15 21:21:14 [32minfo[39m: User logged in: bhanu9
