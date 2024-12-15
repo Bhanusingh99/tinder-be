@@ -13,9 +13,9 @@ const JWT_EXPIRATION = process.env.JWT_EXPIRATION || "1h";
 // Cookie options for setting JWT in HttpOnly cookie
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-  maxAge: 60 * 60 * 1000, // 1 hour expiration
-  sameSite: "Strict", // Helps mitigate CSRF attacks
+  secure: process.env.NODE_ENV === "production",
+  maxAge: 60 * 60 * 1000,
+  sameSite: "Strict",
 };
 
 // ** Sign Up API **
@@ -152,10 +152,8 @@ export const login = async (req, res) => {
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
 
-    // Set the JWT in an HttpOnly cookie
     res.cookie("token", token, COOKIE_OPTIONS);
 
-    // Respond with user data (no token in body)
     const userResponse = {
       id: user._id,
       username: user.username,
@@ -171,7 +169,6 @@ export const login = async (req, res) => {
   } catch (error) {
     logger.error("Login error:", error);
 
-    // Specific error handling for validation errors
     if (error.name === "ValidationError") {
       return res.status(400).json({
         status: "error",
